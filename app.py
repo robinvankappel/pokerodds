@@ -1,38 +1,5 @@
-import numpy as np
 import streamlit as st
-
-def simulate_tournament(chip_stacks):
-    players = list(range(len(chip_stacks)))
-    chips = np.array(chip_stacks, dtype=float)
-    finishing_order = []
-
-    while len(players) > 1:
-        total_chips = chips.sum()
-        if total_chips == 0:
-            finishing_order.extend(players[::-1])  # Add remaining players in reverse order
-            break
-        probs = chips / total_chips
-        eliminated = np.random.choice(players, p=probs)
-        finishing_order.append(eliminated)
-        chips = np.delete(chips, players.index(eliminated))  # Remove chips of eliminated player
-        players.remove(eliminated)
-
-    finishing_order.extend(players[::-1])  # Add remaining players
-    return finishing_order
-
-def calculate_icm_monte_carlo(chip_stacks, payouts, num_simulations=100000):
-    num_players = len(chip_stacks)
-    position_counts = [[0] * num_players for _ in range(num_players)]
-
-    for _ in range(num_simulations):
-        finishing_order = simulate_tournament(chip_stacks)
-        for pos, player in enumerate(finishing_order):
-            position_counts[pos][player] += 1
-
-    probabilities = [[count / num_simulations for count in position_counts[pos]] for pos in range(num_players)]
-    icm_ev = [sum(probabilities[pos][player] * payouts[pos] for pos in range(num_players)) for player in range(num_players)]
-
-    return {"ICM EV": icm_ev, "Probabilities": probabilities}
+from ICMmodels import *
 
 def add_player(players):
     players.append({"name": f"Player {len(players) + 1}", "stack": ""})

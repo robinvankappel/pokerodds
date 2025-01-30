@@ -1,35 +1,26 @@
 import math
+import numpy as np
 import random
 from decimal import Decimal
 
 def simulate_tournament(chip_stacks):
-    """
-    Simulates a single tournament outcome based on chip stacks.
+    players = list(range(len(chip_stacks)))
+    chips = np.array(chip_stacks, dtype=float)
+    finishing_order = []
 
-    Args:
-        chip_stacks (list): List of chip stacks for each player.
+    while len(players) > 1:
+        total_chips = chips.sum()
+        if total_chips == 0:
+            finishing_order.extend(players[::-1])  # Add remaining players in reverse order
+            break
+        probs = chips / total_chips
+        eliminated = np.random.choice(players, p=probs)
+        finishing_order.append(eliminated)
+        chips = np.delete(chips, players.index(eliminated))  # Remove chips of eliminated player
+        players.remove(eliminated)
 
-    Returns:
-        list: Players in the order they finish (from first place to last place).
-    """
-    remaining_players = list(range(len(chip_stacks)))
-    elimination_order = []
-
-    while len(remaining_players) > 1:
-        # Calculate probabilities of elimination
-        total_chips = sum(chip_stacks[player] for player in remaining_players)
-        elimination_probs = [chip_stacks[player] / total_chips for player in remaining_players]
-
-        # Eliminate one player based on probabilities
-        eliminated = random.choices(remaining_players, weights=elimination_probs, k=1)[0]
-        elimination_order.append(eliminated)
-        remaining_players.remove(eliminated)
-
-    # Add the winner (last remaining player) to the elimination order
-    elimination_order.append(remaining_players[0])
-
-    # Finishing order matches the elimination order
-    return elimination_order
+    finishing_order.extend(players[::-1])  # Add remaining players
+    return finishing_order
 
 def calculate_chip_chop_icm(chip_stacks, payouts):
     """
